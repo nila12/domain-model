@@ -154,7 +154,7 @@ open class Job {
     
     public enum JobType {
         case Hourly(Double)
-        case Salary(Int)
+        case Salary(Int) //per-year
     }
     
     public init(title : String, type : JobType) {
