@@ -8,8 +8,6 @@
 
 import Foundation
 
-print("Hello, World!")
-
 public func testMe() -> String {
     return "I have been tested"
 }
@@ -28,9 +26,6 @@ public struct Money {
     public var currency : String
     
     public func convert(_ to: String) -> Money {
-        
-        // put cases to convert the amount in money according to the currency passed in "to", or return as is if the currency to be converted to is the present currency
-        // in each case, have to check what the self.currency is..??? srsly
         
         switch to {
             
@@ -106,15 +101,15 @@ public struct Money {
                 
             case "USD" : // 4 USD to 5 CAN
                 
-                return Money(amount: (self.amount / 4) * 5, currency: "EUR")
+                return Money(amount: (self.amount / 4) * 5, currency: "CAN")
                 
             case "GBP" : // 2 GBP to 5 CAN
                 
-                return Money(amount: (self.amount / 2) * 5, currency: "EUR")
+                return Money(amount: (self.amount / 2) * 5, currency: "CAN")
                 
             case "EUR" : // 6 EUR to 5 CAN
                 
-                return Money(amount: (self.amount / 6) * 5, currency: "EUR")
+                return Money(amount: (self.amount / 6) * 5, currency: "CAN")
                 
             default : //since GBP case dealt by the very first case
                 print ("Invalid exchange currency inputted, no conversion conducted")
@@ -129,9 +124,6 @@ public struct Money {
     }
     
     public func add(_ to: Money) -> Money {
-        // convert self to to's types then operate then return
-        
-        //var updatedSelf = self.convert(to.currency)
         
         return Money(amount: (self.convert(to.currency)).amount + to.amount, currency: to.currency)
     }
@@ -140,14 +132,13 @@ public struct Money {
         
         return Money(amount: (self.convert(from.currency)).amount - from.amount, currency: from.currency)
         
-        //which way to subtract???
-        
     }
 }
 
 ////////////////////////////////////
 // Job
 //
+
 open class Job {
     fileprivate var title : String
     fileprivate var type : JobType
@@ -158,12 +149,30 @@ open class Job {
     }
     
     public init(title : String, type : JobType) {
+        self.title = title
+        self.type = type
     }
     
     open func calculateIncome(_ hours: Int) -> Int {
+        
+        switch type {
+            
+        case .Hourly(let pay):
+            return Int(Double(hours) * pay);
+        case .Salary(let salary):
+            return salary;
+            
+        }
     }
     
     open func raise(_ amt : Double) {
+        
+        switch type {
+        case .Hourly(let pay):
+            type = JobType.Hourly(amt + pay)
+        case .Salary(let salary):
+            type = JobType.Salary(Int(amt) + salary)
+        }
     }
 }
 
@@ -177,15 +186,26 @@ open class Person {
     
     fileprivate var _job : Job? = nil
     open var job : Job? {
-        get { }
+        get {
+            return _job
+        }
+        
         set(value) {
+            if (age >= 16) {
+                _job = value
+            }
         }
     }
     
     fileprivate var _spouse : Person? = nil
     open var spouse : Person? {
-        get { }
+        get {
+            return _spouse
+        }
         set(value) {
+            if (age >= 18) {
+                _spouse = value
+            }
         }
     }
     
@@ -196,6 +216,7 @@ open class Person {
     }
     
     open func toString() -> String {
+        return ("[Person: firstName:\(firstName) lastName:\(lastName) age:\(age) job:\(_job) spouse:\(_spouse)]")
     }
 }
 
@@ -206,12 +227,30 @@ open class Family {
     fileprivate var members : [Person] = []
     
     public init(spouse1: Person, spouse2: Person) {
+        if (spouse1._spouse == nil && spouse2._spouse == nil) {
+            spouse1._spouse = spouse2
+            spouse2._spouse = spouse1
+        }
+        members.append(spouse1)
+        members.append(spouse2)
     }
     
     open func haveChild(_ child: Person) -> Bool {
+        members.append(child)
+        return true
     }
     
     open func householdIncome() -> Int {
+        var sum = 0
+        
+        for person in members {
+            if (person.job != nil) {
+                sum += (person.job?.calculateIncome(2000))!
+            }
+            
+        }
+        return sum
+
     }
 }
 
